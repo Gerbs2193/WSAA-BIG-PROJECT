@@ -1,9 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import date
 
 app = Flask(__name__)
-
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fishkeeping.db'
 db = SQLAlchemy(app)
 
@@ -11,7 +10,7 @@ class Fish(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     species_name = db.Column(db.String(100), nullable=False)
     tank_name = db.Column(db.String(100), nullable=False)
-    date_added = db.Column(db.Date, nullable=False, default=date.today())
+    date_added = db.Column(db.Date, nullable=False, default=date.today)
     notes = db.Column(db.Text, nullable=True)
 
     def to_dict(self):
@@ -26,7 +25,11 @@ class Fish(db.Model):
 with app.app_context():
     db.create_all()
 
-# API Routes for JSON interaction
+@app.route('/')
+def index():
+    fish_list = Fish.query.all()
+    return render_template('index.html', fish_list=fish_list)
+
 @app.route('/api/fish', methods=['GET'])
 def get_fish_list():
     fish_list = Fish.query.all()
@@ -43,8 +46,8 @@ def add_fish_api():
     new_fish = Fish(
         species_name=data['species_name'],
         tank_name=data['tank_name'],
-        date_added=date.fromisoformat(data.get('date_added', date.today().isoformat())),
-        notes=data.get('notes', '')
+        date_added=date.fromisoformat(data['date_added']),
+        notes=data['notes']
     )
     db.session.add(new_fish)
     db.session.commit()
@@ -54,10 +57,10 @@ def add_fish_api():
 def update_fish_api(id):
     fish = Fish.query.get_or_404(id)
     data = request.get_json()
-    fish.species_name = data.get('species_name', fish.species_name)
-    fish.tank_name = data.get('tank_name', fish.tank_name)
-    fish.date_added = date.fromisoformat(data.get('date_added', fish.date_added.isoformat()))
-    fish.notes = data.get('notes', fish.notes)
+    fish.species_name = data['species_name']
+    fish.tank_name = data['tank_name']
+    fish.date_added = date.fromisoformat(data['date_added'])
+    fish.notes = data['notes']
     db.session.commit()
     return jsonify(fish.to_dict())
 
@@ -67,12 +70,6 @@ def delete_fish_api(id):
     db.session.delete(fish)
     db.session.commit()
     return jsonify({'message': 'Fish deleted'}), 204
-
-# Regular web routes
-@app.route('/')
-def index():
-    fish_list = Fish.query.all()
-    return render_template('index.html', fish_list=fish_list)
 
 if __name__ == "__main__":
     app.run(debug=True)

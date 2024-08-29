@@ -7,6 +7,11 @@
 </head>
 <body>
     <h1>Fishkeeping Application</h1>
+
+    <input type="text" id="searchBox" onkeyup="searchFish()" placeholder="Search by species or tank...">
+    
+    <div id="fishList"></div>
+    
     <form id="addFishForm">
         <label for="speciesName">Species Name:</label>
         <input type="text" id="speciesName" name="speciesName" required><br>
@@ -21,6 +26,8 @@
 
     <script>
     $(document).ready(function() {
+        loadFish();
+
         $('#addFishForm').on('submit', function(e) {
             e.preventDefault();
             var postData = {
@@ -36,7 +43,7 @@
                 data: JSON.stringify(postData),
                 success: function(response) {
                     alert('Fish added successfully!');
-                    // Optionally refresh the list or update the UI here
+                    loadFish();
                 },
                 error: function() {
                     alert('Error adding fish.');
@@ -44,6 +51,40 @@
             });
         });
     });
+
+    function loadFish() {
+        $.ajax({
+            url: '/api/fish',
+            type: 'GET',
+            success: function(response) {
+                var display = $('#fishList');
+                display.empty();
+                response.forEach(function(fish) {
+                    display.append(`<div class="fish-entry" data-species="${fish.species_name.toLowerCase()}" data-tank="${fish.tank_name.toLowerCase()}">
+                        <span>${fish.species_name} - ${fish.tank_name}</span>
+                        <button onclick="deleteFish(${fish.id})">Delete</button>
+                        <button onclick="editFish(${fish.id})">Edit</button>
+                    </div>`);
+                });
+            },
+            error: function() {
+                $('#fishList').text('Failed to load fish.');
+            }
+        });
+    }
+
+    function searchFish() {
+        var searchText = $('#searchBox').val().toLowerCase();
+        $('.fish-entry').each(function() {
+            var species = $(this).data('species');
+            var tank = $(this).data('tank');
+            if (species.indexOf(searchText) > -1 || tank.indexOf(searchText) > -1) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    }
     </script>
 </body>
 </html>
