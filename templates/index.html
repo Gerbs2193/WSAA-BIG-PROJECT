@@ -1,10 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>FishKeepingJournal</title>
+    <meta charset="UTF-8">
+    <title>Fishkeeping</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
-    <h1>Welcome to the </h1>
-    <p>Add, view, and manage your movie watchlist here!</p>
+    <h1>Fishkeeping Application</h1>
+    <form id="addFishForm">
+        <label for="speciesName">Species Name:</label>
+        <input type="text" id="speciesName" name="speciesName" required><br>
+        <label for="tankName">Tank Name:</label>
+        <input type="text" id="tankName" name="tankName" required><br>
+        <label for="dateAdded">Date Added:</label>
+        <input type="date" id="dateAdded" name="dateAdded" required><br>
+        <label for="notes">Notes:</label>
+        <textarea id="notes" name="notes"></textarea><br>
+        <button type="submit">Add Fish</button>
+    </form>
+
+    <script>
+    $(document).ready(function() {
+        $('#addFishForm').on('submit', function(e) {
+            e.preventDefault();
+            var postData = {
+                species_name: $('#speciesName').val(),
+                tank_name: $('#tankName').val(),
+                date_added: $('#dateAdded').val(),
+                notes: $('#notes').val()
+            };
+            $.ajax({
+                url: '/api/add',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(postData),
+                success: function(response) {
+                    alert('Fish added successfully!');
+                    // Optionally refresh the list or update the UI here
+                },
+                error: function() {
+                    alert('Error adding fish.');
+                }
+            });
+        });
+    });
+    </script>
 </body>
 </html>
