@@ -15,7 +15,7 @@ For this project, I decided to do a simple, yet for me useful, Fishkeeping Appli
 
 **Fish Management and Tank Management:** Add, edit, delete and view your entries in real-time. Specifically, the options are split in two separate tables specific to either fish or aquaria. In the fish table, you can Add New Fish, Species Name, Date Added and Notes. For the Aquaria,  you can Add New Tank, Name, Volume and Description. 
 
-**Data**: All of the Data is stored in a SQLLite database which ensures everything is retained, when closed etc. 
+**Data**: All of the Data is stored in a SQLite database which ensures everything is retained, when closed etc. 
 
 **Responsive Web Interferface**
 The interface is dynamic and was built with HTML, CSS and JAVA which interact with the Flask
@@ -44,9 +44,9 @@ WSAA-BIG-PROJECT/
 
 - **requirements.txt**: All necessary python dependancies to run the app in VSCode and Render when hosting. 
 
-- **Procfile**: Needed when deploying the app Render.com, which I found more straight forward than PythonAnywhere. 
+- **Procfile**: Needed when deploying the app on Render.com, which I found more straight forward than PythonAnywhere. 
 
-- **Templates/index.html**: The HTML neededfor the web interface. 
+- **Templates/index.html**: The HTML needed for the web interface. 
 
 
 
@@ -74,11 +74,11 @@ cd WSAA-BIG-PROJECT
 
 ## Running the App
 
-Start the Flask server by opening the server.py file and typing python server.py in the terminal. From this, the url - http://127.0.0.1:5000 will be clickable. Click it and itll take you to thw web application. 
+Start the Flask server by opening the server.py file and typing python server.py in the terminal. From this, the url - http://127.0.0.1:5001 will be generated. Click it and it'll take you to the web application. 
 
 ## Deployment
 
-I deployed this app using Render.com, as i found its UI more intuitive than alternatives. 
+I deployed this app using Render.com, as I found its UI more intuitive than alternatives. 
 
 **Render Deployment Steps**
 
@@ -115,5 +115,9 @@ Free to use
 
 - https://flask.palletsprojects.com/en/2.1.x/patterns/sqlalchemy/
 
+- https://realpython.com/learning-paths/flask-by-example/
 
+- https://ericbernier.com/flask-restful-api
+
+- Labs in relation to the project provided by my Lecturer. 
 
