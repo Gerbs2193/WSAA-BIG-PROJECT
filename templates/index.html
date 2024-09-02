@@ -2,89 +2,167 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Fishkeeping</title>
+    <title>Fishkeeping Application</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
 <body>
-    <h1>Fishkeeping Application</h1>
+    <div class="container">
+        <h1 class="mt-5">Fishkeeping Application</h1>
 
-    <input type="text" id="searchBox" onkeyup="searchFish()" placeholder="Search by species or tank...">
-    
-    <div id="fishList"></div>
-    
-    <form id="addFishForm">
-        <label for="speciesName">Species Name:</label>
-        <input type="text" id="speciesName" name="speciesName" required><br>
-        <label for="tankName">Tank Name:</label>
-        <input type="text" id="tankName" name="tankName" required><br>
-        <label for="dateAdded">Date Added:</label>
-        <input type="date" id="dateAdded" name="dateAdded" required><br>
-        <label for="notes">Notes:</label>
-        <textarea id="notes" name="notes"></textarea><br>
-        <button type="submit">Add Fish</button>
-    </form>
+        <div class="mb-3">
+            <button id="showCreateButton" onclick="showCreate()" class="btn btn-primary">Add New Fish</button>
+        </div>
+
+        <div id="createUpdateForm" style="display: none">
+            <h2 id="formTitle">Add a New Fish</h2>
+            <form id="fishForm">
+                <input type="hidden" name="id">
+                <div class="form-group">
+                    <label for="species_name">Species Name</label>
+                    <input type="text" name="species_name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="tank_name">Tank Name</label>
+                    <input type="text" name="tank_name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="date_added">Date Added</label>
+                    <input type="date" name="date_added" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea name="notes" class="form-control"></textarea>
+                </div>
+                <button type="submit" id="saveButton" class="btn btn-success">Save</button>
+                <button type="button" onclick="cancelForm()" class="btn btn-secondary">Cancel</button>
+            </form>
+        </div>
+
+        <div id="fishList">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Species Name</th>
+                        <th>Tank Name</th>
+                        <th>Date Added</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="fishTableBody">
+                    <!-- Fish data will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <script>
-    $(document).ready(function() {
-        loadFish();
+        $(document).ready(function() {
+            loadFish();
 
-        $('#addFishForm').on('submit', function(e) {
-            e.preventDefault();
-            var postData = {
-                species_name: $('#speciesName').val(),
-                tank_name: $('#tankName').val(),
-                date_added: $('#dateAdded').val(),
-                notes: $('#notes').val()
-            };
-            $.ajax({
-                url: '/api/add',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(postData),
-                success: function(response) {
-                    alert('Fish added successfully!');
-                    loadFish();
-                },
-                error: function() {
-                    alert('Error adding fish.');
-                }
+            $('#fishForm').on('submit', function(e) {
+                e.preventDefault();
+                saveFish();
             });
         });
-    });
 
-    function loadFish() {
-        $.ajax({
-            url: '/api/fish',
-            type: 'GET',
-            success: function(response) {
-                var display = $('#fishList');
-                display.empty();
-                response.forEach(function(fish) {
-                    display.append(`<div class="fish-entry" data-species="${fish.species_name.toLowerCase()}" data-tank="${fish.tank_name.toLowerCase()}">
-                        <span>${fish.species_name} - ${fish.tank_name}</span>
-                        <button onclick="deleteFish(${fish.id})">Delete</button>
-                        <button onclick="editFish(${fish.id})">Edit</button>
-                    </div>`);
+        function loadFish() {
+            $.getJSON('/api/fish', function(data) {
+                let fishTableBody = $('#fishTableBody');
+                fishTableBody.empty();
+                data.forEach(fish => {
+                    fishTableBody.append(`
+                        <tr id="fish-${fish.id}">
+                            <td>${fish.id}</td>
+                            <td>${fish.species_name}</td>
+                            <td>${fish.tank_name}</td>
+                            <td>${fish.date_added}</td>
+                            <td>${fish.notes}</td>
+                            <td>
+                                <button class="btn btn-warning" onclick="editFish(${fish.id})">Edit</button>
+                                <button class="btn btn-danger" onclick="deleteFish(${fish.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `);
                 });
-            },
-            error: function() {
-                $('#fishList').text('Failed to load fish.');
-            }
-        });
-    }
+            });
+        }
 
-    function searchFish() {
-        var searchText = $('#searchBox').val().toLowerCase();
-        $('.fish-entry').each(function() {
-            var species = $(this).data('species');
-            var tank = $(this).data('tank');
-            if (species.indexOf(searchText) > -1 || tank.indexOf(searchText) > -1) {
-                $(this).show();
+        function saveFish() {
+            let fishData = {
+                species_name: $('[name="species_name"]').val(),
+                tank_name: $('[name="tank_name"]').val(),
+                date_added: $('[name="date_added"]').val(),
+                notes: $('[name="notes"]').val()
+            };
+
+            let id = $('[name="id"]').val();
+            if (id) {
+                $.ajax({
+                    url: `/api/fish/${id}`,
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(fishData),
+                    success: function() {
+                        loadFish();
+                        cancelForm();
+                    }
+                });
             } else {
-                $(this).hide();
+                $.ajax({
+                    url: '/api/fish',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(fishData),
+                    success: function() {
+                        loadFish();
+                        cancelForm();
+                    }
+                });
             }
-        });
-    }
+        }
+
+        function editFish(id) {
+            $.getJSON(`/api/fish/${id}`, function(data) {
+                $('[name="id"]').val(data.id);
+                $('[name="species_name"]').val(data.species_name);
+                $('[name="tank_name"]').val(data.tank_name);
+                $('[name="date_added"]').val(data.date_added);
+                $('[name="notes"]').val(data.notes);
+                showForm('Edit Fish');
+            });
+        }
+
+        function deleteFish(id) {
+            $.ajax({
+                url: `/api/fish/${id}`,
+                type: 'DELETE',
+                success: function() {
+                    $(`#fish-${id}`).remove();
+                }
+            });
+        }
+
+        function showCreate() {
+            $('[name="id"]').val('');
+            $('#fishForm')[0].reset();
+            showForm('Add a New Fish');
+        }
+
+        function showForm(title) {
+            $('#formTitle').text(title);
+            $('#createUpdateForm').show();
+            $('#fishList').hide();
+            $('#showCreateButton').hide();
+        }
+
+        function cancelForm() {
+            $('#createUpdateForm').hide();
+            $('#fishList').show();
+            $('#showCreateButton').show();
+        }
     </script>
 </body>
 </html>
