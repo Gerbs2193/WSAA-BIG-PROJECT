@@ -1,4 +1,5 @@
-# WSAA-BIG-PROJECT
+# WSAA-BIG-PROJECT - Gerard Ball
+
 
 ## FishKeeping Application Log
 
@@ -81,11 +82,38 @@ I deployed this app using Render.com, as i found its UI more intuitive than alte
 
 **Render Deployment Steps**
 
+### Live Application
+You can access the live version of the application here: [Fishkeeping Application](https://wsaa-big-project.onrender.com/)
 
-	
+**Note:** The application is hosted on Render's free tier, which means it may take a few moments (or several moments indeed) to start up if it hasn't been accessed recently. Seriously, it took minutes at one stage. 
+
+**How to set up in Render:**
+
+- Create a Render Account
+
+- Create a New Web Service: Connect it to your GitHub repository for easier file managing
+
+- Select Environment: Choose Python 3.10.
+
+- Set the Start Command: Use python server.py as the start command.
+
+
+- Deploy: Render will then automatically detect the Procfile and deploy your app.
+
+## Usage
+
+Once on the FishKeeping browser app, use the interface to freely manage your fish and tanks to you hearts desire. 
+
+## License
+
+Free to use
+
+## Sources
 
  
+- All about Flask - https://flask.palletsprojects.com/en/2.1.x/quickstart/
 
+- https://flask.palletsprojects.com/en/2.1.x/patterns/sqlalchemy/
 
 
 
