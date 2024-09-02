@@ -10,32 +10,33 @@
     <div class="container">
         <h1 class="mt-5">Fishkeeping Application</h1>
 
+        <!-- Fish Section -->
         <div class="mb-3">
-            <button id="showCreateButton" onclick="showCreate()" class="btn btn-primary">Add New Fish</button>
+            <button id="showCreateFishButton" onclick="showCreateFish()" class="btn btn-primary">Add New Fish</button>
         </div>
 
-        <div id="createUpdateForm" style="display: none">
-            <h2 id="formTitle">Add a New Fish</h2>
+        <div id="createUpdateFishForm" style="display: none">
+            <h2 id="fishFormTitle">Add a New Fish</h2>
             <form id="fishForm">
-                <input type="hidden" name="id">
+                <input type="hidden" id="fishId" name="id">
                 <div class="form-group">
                     <label for="species_name">Species Name</label>
-                    <input type="text" name="species_name" class="form-control" required>
+                    <input type="text" id="species_name" name="species_name" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label for="tank_name">Tank Name</label>
-                    <input type="text" name="tank_name" class="form-control" required>
+                    <input type="text" id="fish_tank_name" name="tank_name" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label for="date_added">Date Added</label>
-                    <input type="date" name="date_added" class="form-control" required>
+                    <input type="date" id="fish_date_added" name="date_added" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label for="notes">Notes</label>
-                    <textarea name="notes" class="form-control"></textarea>
+                    <textarea id="fish_notes" name="notes" class="form-control"></textarea>
                 </div>
-                <button type="submit" id="saveButton" class="btn btn-success">Save</button>
-                <button type="button" onclick="cancelForm()" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-success">Save</button>
+                <button type="button" onclick="cancelFishForm()" class="btn btn-secondary">Cancel</button>
             </form>
         </div>
 
@@ -56,18 +57,68 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Tank Section -->
+        <div class="mb-3">
+            <button id="showCreateTankButton" onclick="showCreateTank()" class="btn btn-primary">Add New Tank</button>
+        </div>
+
+        <div id="createUpdateTankForm" style="display: none">
+            <h2 id="tankFormTitle">Add a New Tank</h2>
+            <form id="tankForm">
+                <input type="hidden" id="tankId" name="id">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="tank_name" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="volume">Volume</label>
+                    <input type="text" id="tank_volume" name="volume" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="tank_description" name="description" class="form-control"></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Save</button>
+                <button type="button" onclick="cancelTankForm()" class="btn btn-secondary">Cancel</button>
+            </form>
+        </div>
+
+        <div id="tankList">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Volume</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tankTableBody">
+                    <!-- Tank data will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
         $(document).ready(function() {
             loadFish();
+            loadTanks();
 
             $('#fishForm').on('submit', function(e) {
                 e.preventDefault();
                 saveFish();
             });
+
+            $('#tankForm').on('submit', function(e) {
+                e.preventDefault();
+                saveTank();
+            });
         });
 
+        // Fish Functions
         function loadFish() {
             $.getJSON('/api/fish', function(data) {
                 let fishTableBody = $('#fishTableBody');
@@ -92,13 +143,13 @@
 
         function saveFish() {
             let fishData = {
-                species_name: $('[name="species_name"]').val(),
-                tank_name: $('[name="tank_name"]').val(),
-                date_added: $('[name="date_added"]').val(),
-                notes: $('[name="notes"]').val()
+                species_name: $('#species_name').val(),
+                tank_name: $('#fish_tank_name').val(),
+                date_added: $('#fish_date_added').val(),
+                notes: $('#fish_notes').val()
             };
 
-            let id = $('[name="id"]').val();
+            let id = $('#fishId').val();
             if (id) {
                 $.ajax({
                     url: `/api/fish/${id}`,
@@ -107,7 +158,7 @@
                     data: JSON.stringify(fishData),
                     success: function() {
                         loadFish();
-                        cancelForm();
+                        cancelFishForm();
                     }
                 });
             } else {
@@ -118,7 +169,7 @@
                     data: JSON.stringify(fishData),
                     success: function() {
                         loadFish();
-                        cancelForm();
+                        cancelFishForm();
                     }
                 });
             }
@@ -126,12 +177,12 @@
 
         function editFish(id) {
             $.getJSON(`/api/fish/${id}`, function(data) {
-                $('[name="id"]').val(data.id);
-                $('[name="species_name"]').val(data.species_name);
-                $('[name="tank_name"]').val(data.tank_name);
-                $('[name="date_added"]').val(data.date_added);
-                $('[name="notes"]').val(data.notes);
-                showForm('Edit Fish');
+                $('#fishId').val(data.id);
+                $('#species_name').val(data.species_name);
+                $('#fish_tank_name').val(data.tank_name);
+                $('#fish_date_added').val(data.date_added);
+                $('#fish_notes').val(data.notes);
+                showFishForm('Edit Fish');
             });
         }
 
@@ -145,23 +196,127 @@
             });
         }
 
-        function showCreate() {
-            $('[name="id"]').val('');
+        // Tank Functions
+        function loadTanks() {
+            $.getJSON('/api/tanks', function(data) {
+                let tankTableBody = $('#tankTableBody');
+                tankTableBody.empty();
+                data.forEach(tank => {
+                    tankTableBody.append(`
+                        <tr id="tank-${tank.id}">
+                            <td>${tank.id}</td>
+                            <td>${tank.name}</td>
+                            <td>${tank.volume}</td>
+                            <td>${tank.description}</td>
+                            <td>
+                                <button class="btn btn-warning" onclick="editTank(${tank.id})">Edit</button>
+                                <button class="btn btn-danger" onclick="deleteTank(${tank.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            });
+        }
+
+        function saveTank() {
+            let tankData = {
+                name: $('#tank_name').val(),
+                volume: $('#tank_volume').val(),
+                description: $('#tank_description').val()
+            };
+
+            let id = $('#tankId').val();
+            if (id) {
+                $.ajax({
+                    url: `/api/tanks/${id}`,
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(tankData),
+                    success: function() {
+                        loadTanks();
+                        cancelTankForm();
+                    }
+                });
+            } else {
+                $.ajax({
+                    url: '/api/tanks',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(tankData),
+                    success: function() {
+                        loadTanks();
+                        cancelTankForm();
+                    }
+                });
+            }
+        }
+
+        function editTank(id) {
+            $.getJSON(`/api/tanks/${id}`, function(data) {
+                $('#tankId').val(data.id);
+                $('#tank_name').val(data.name);
+                $('#tank_volume').val(data.volume);
+                $('#tank_description').val(data.description);
+                showTankForm('Edit Tank');
+            });
+        }
+
+        function deleteTank(id) {
+            $.ajax({
+                url: `/api/tanks/${id}`,
+                type: 'DELETE',
+                success: function() {
+                    $(`#tank-${id}`).remove();
+                }
+            });
+        }
+
+        function showCreateFish() {
+            $('#fishId').val('');
             $('#fishForm')[0].reset();
-            showForm('Add a New Fish');
+            showFishForm('Add a New Fish');
         }
 
-        function showForm(title) {
-            $('#formTitle').text(title);
-            $('#createUpdateForm').show();
+        function showCreateTank() {
+            $('#tankId').val('');
+            $('#tankForm')[0].reset();
+            showTankForm('Add a New Tank');
+        }
+
+        function showFishForm(title) {
+            $('#fishFormTitle').text(title);
+            $('#createUpdateFishForm').show();
+            $('#createUpdateTankForm').hide();
             $('#fishList').hide();
-            $('#showCreateButton').hide();
+            $('#tankList').hide();
+            $('#showCreateFishButton').hide();
+            $('#showCreateTankButton').hide();
         }
 
-        function cancelForm() {
-            $('#createUpdateForm').hide();
+        function showTankForm(title) {
+            $('#tankFormTitle').text(title);
+            $('#createUpdateTankForm').show();
+            $('#createUpdateFishForm').hide();
+            $('#fishList').hide();
+            $('#tankList').hide();
+            $('#showCreateFishButton').hide();
+            $('#showCreateTankButton').hide();
+        }
+
+        function cancelFishForm() {
+            $('#createUpdateFishForm').hide();
             $('#fishList').show();
-            $('#showCreateButton').show();
+            $('#tankList').show();
+            $('#showCreateFishButton').show();
+            $('#showCreateTankButton').show();
+        }
+
+        function cancelTankForm() {
+            $('#createUpdateTankForm').hide();
+            $('#fishList').show();
+            $('#tankList').show();
+            $('#showCreateFishButton').show();
+            $('#showCreateTankButton').show();
         }
     </script>
 </body>
